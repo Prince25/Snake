@@ -1,8 +1,8 @@
-const GRID_WIDTH = GRID_HEIGHT = 30;
+const GRID_WIDTH = GRID_HEIGHT = 20;
 const ROWS = 20;
 const COLS = 20;
 const GROW_SIZE = 3;    // The amount snake grows by after eating food
-const DEBUG = false;
+const DEBUG = true;
 
 var foodX;
 var foodY;
@@ -35,7 +35,7 @@ function draw() {
   background(255);  // Clear screen
 
   if (DEBUG) {
-    drawGridLines();
+    drawGrid();
   }
   
   if (pause) {
@@ -54,9 +54,9 @@ function draw() {
     }
     snake.unshift({x: x, y: y}); // Add the new head to the front
     
+    drawTrail();
     checkFood();
     checkCollisions();
-    drawTrail();
     spawnFood();
   }
   else
@@ -68,28 +68,7 @@ function draw() {
 }
 
 
-function drawScore() {
-  textSize(10);
-  textAlign(RIGHT, BOTTOM);
-  text("Score: " + (snakeLength - 1).toString(), (COLS) * GRID_WIDTH - 10, (ROWS) * GRID_HEIGHT - 10);
-}
-
-
-function checkFood() {
-  if (snake[0].x === foodX && snake[0].y  === foodY) {
-    snakeLength += GROW_SIZE;
-    hasFood = false;
-  }
-}
-
-
-function checkCollisions() {
-  let head = snake[0]
-  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS)
-    inGame = false;
-}
-
-
+// Draws snake trail
 function drawTrail() {
   // Fill the old squares (where snake was)
   for (let i = snakeLength; i < snake.length - 1; i++) {
@@ -112,12 +91,35 @@ function drawTrail() {
 }
 
 
+// Check if food is eaten
+function checkFood() {
+  if (snake[0].x === foodX && snake[0].y  === foodY) {
+    snakeLength += GROW_SIZE;
+    hasFood = false;
+  }
+}
+
+
+function checkCollisions() {
+  let head = snake[0]
+
+  // Check wall collision
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS)
+    inGame = false;
+
+  // Check trail collision
+  if (snake.some((cell, index) => index != 0 && cell.x == head.x && cell.y == head.y))
+    inGame = false;
+}
+
+
 function spawnFood() {
   if (!hasFood) {
     do {
       foodX = randomNumber(0, COLS);
       foodY = randomNumber(0, ROWS);
-    } while (snake.some(cell => cell.x == foodX && cell.y == foodY))
+      // Try again if food coords are on the snake trail
+    } while (snake.some(cell => cell.x == foodX && cell.y == foodY)) 
     hasFood = true;
   }
   fill(0, 255, 0, 100);
@@ -126,23 +128,31 @@ function spawnFood() {
 }
 
 
-function keyPressed() {
-  switch(key) {
-    case 'w': direction = 'w'; if (!inGame) setup(); break;
-    case 's': direction = 's'; if (!inGame) setup(); break;
-    case 'a': direction = 'a'; if (!inGame) setup(); break;
-    case 'd': direction = 'd'; if (!inGame) setup(); break;
-    case 'p': if (inGame) pause = !pause;  break;
-  }
-}
-
-
 function gameOver() {
+  drawTrail();
   textSize(50);
   textAlign(CENTER);
   text("Game over!", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT);
   textSize(30);
   text("Score: " + (snakeLength - 1).toString(), (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT + 30);
+}
+
+
+function keyPressed() {
+  switch(key) {
+    case 'w': if (direction != 's') direction = 'w'; if (!inGame) setup(); break;
+    case 's': if (direction != 'w') direction = 's'; if (!inGame) setup(); break;
+    case 'a': if (direction != 'd') direction = 'a'; if (!inGame) setup(); break;
+    case 'd': if (direction != 'a') direction = 'd'; if (!inGame) setup(); break;
+    case 'p': if (inGame) pause = !pause;  break;
+  }
+}
+
+
+function drawScore() {
+  textSize(10);
+  textAlign(RIGHT, BOTTOM);
+  text("Score: " + (snakeLength - 1).toString(), (COLS) * GRID_WIDTH - 10, (ROWS) * GRID_HEIGHT - 10);
 }
 
 
@@ -157,7 +167,7 @@ function drawBorder() {
 }
 
 
-function drawGridLines() {
+function drawGrid() {
   stroke(0);
   strokeWeight(1);
   for(var i = 0; i <= width; i += GRID_WIDTH) {
