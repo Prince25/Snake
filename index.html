@@ -1,29 +1,82 @@
 <!DOCTYPE html>
 <html lang="">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake - p5.js</title>
-  <style>
-    body {
-      padding: "0 50px";
-      margin: 10px;
-    }
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - p5.js</title>
+    <style>
+      body {
+        padding: "0 50px";
+        margin: 10px;
+      }
 
-    .game {
-      text-align: center;
-    }
-  </style>
+      ul {
+        display: table;
+        margin: 0 auto;
+        list-style-type: none;
+      }
 
-  <!-- p5.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
-</head>
+      li {
+        margin-bottom: 5px;
+      }
 
-<body>
-  <main class="game">
-    <script src="snake.js"></script>
-  </main>
-</body>
+      .noMargin {
+        margin: 0;
+      }
 
+      .center {
+        text-align: center;
+      }
+
+      .row {
+        display: flex;
+      }
+
+      .column {
+        flex: 50%;
+      }
+      
+      .mySpacing {
+        margin-bottom: 10px;
+      }
+    </style>
+
+    <!-- p5.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
+  </head>
+
+
+  <body>
+    <div id="top" class="center"> 
+      <h1 class="noMargin"> Snake</h1>
+      <h4 class="noMargin mySpacing">by Prince</h4>
+    </div>
+
+    <main id="game" class="center" >
+      <script src="snake.js"></script>
+    </main>
+
+    <div id="bottom" class="row">
+      <div id="left" class="column">
+        <h3 class="center mySpacing">Difficulties</h3>
+        <ul>
+          <li><b>Easy:</b> Grows by 1, max speed is 5 FPS</li>
+          <li><b>Medium:</b> Grows by 2, max speed is 10 FPS</li>
+          <li><b>Hard:</b> Grows by 3, max speed is 15 FPS</li>
+        </ul>
+      </div>
+
+      <div id="right" class="column">
+        <h3 class="center mySpacing">Controls</h3>
+        <ul>
+          <li><b>W:</b> move up</li>
+          <li><b>S:</b> move down</li>
+          <li><b>A:</b> move left</li>
+          <li><b>D:</b> move right</li>
+          <li><b>P:</b> pause/unpause</li>
+        </ul>
+      </div>
+    </div>
+  </body>
 </html>
