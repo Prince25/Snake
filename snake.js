@@ -1,31 +1,35 @@
-const GRID_WIDTH = GRID_HEIGHT = 20;
+const GRID_WIDTH = GRID_HEIGHT = 30;
 const ROWS = 20;
 const COLS = 20;
-const GROW_SIZE = 3;    // The amount snake grows by after eating food
-const DEBUG = true;
+const DEBUG = false;
 
-var foodX;
-var foodY;
-var hasFood;
-var direction;
-var snake;
-var snakeLength;
-var speed;
-var inGame;
-var pause;
+var onMenu;       // Whether we are on menu (boolean)
+var difficulty;   // Difficulty of the game (string)
+var foodX;        // Food's x position (int)
+var foodY;        // Food's y position (int)
+var hasFood;      // Whether food is spawned (boolean)
+var direction;    // Direction snake is going (string)
+var snake;        // Snake's trail positions (array[{x: int, y: int}])
+var snakeLength;  // Length of snake (int)
+var growSize;     // The amount snake grows by after eating food
+var speed;        // Speed of the game (int)
+var maxSpeed;     // Maximum speed of game based on difficulty (int)
+var alive;        // Whether snake is alive (boolean)
+var paused;       // Whether game is paused (boolean)
 
 
 function setup() {
   createCanvas(COLS * GRID_WIDTH, ROWS * GRID_HEIGHT);
   noStroke(); 
  
+  onMenu = true;
   hasFood = false;
   direction = '';
   snake = [{x: 0, y: 0}];
   snakeLength = 1;
-  speed = 5;
-  inGame = true;
-  pause = false;
+  speed = 3;
+  alive = false;
+  paused = false;
 
   frameRate(speed); 
 }
@@ -34,16 +38,13 @@ function setup() {
 function draw() {
   background(255);  // Clear screen
 
-  if (DEBUG) {
+  if (DEBUG && !onMenu) {
     drawGrid();
   }
   
-  if (pause) {
-    textSize(50);
-    textAlign(CENTER);
-    text("PAUSE", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT);
-  }
-  else if (inGame) {
+  if (onMenu) drawMenu();
+  else if (paused) drawPause();
+  else if (alive) {
     // Move
     let {x, y} = snake[0]
     switch(direction) {
@@ -60,10 +61,9 @@ function draw() {
     spawnFood();
   }
   else
-    gameOver();
+    drawGameOver();
 
-
-  drawScore();
+  if (!onMenu) drawScore();
   drawBorder(); 
 }
 
@@ -94,7 +94,8 @@ function drawTrail() {
 // Check if food is eaten
 function checkFood() {
   if (snake[0].x === foodX && snake[0].y  === foodY) {
-    snakeLength += GROW_SIZE;
+    snakeLength += growSize;
+    if (speed < maxSpeed) { speed += randomNumber(1, 11) / 10; frameRate(speed); }
     hasFood = false;
   }
 }
@@ -105,11 +106,14 @@ function checkCollisions() {
 
   // Check wall collision
   if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS)
-    inGame = false;
+    alive = false;
 
   // Check trail collision
   if (snake.some((cell, index) => index != 0 && cell.x == head.x && cell.y == head.y))
-    inGame = false;
+    alive = false;
+
+  if (!alive)
+    setTimeout(() => setup(), 3000)
 }
 
 
@@ -128,24 +132,59 @@ function spawnFood() {
 }
 
 
-function gameOver() {
+function keyPressed() {
+  switch(key) {
+    case '1': if (onMenu) { difficulty = 'easy';    growSize = 1; maxSpeed = 5; alive = true; onMenu = false; } break;
+    case '2': if (onMenu) { difficulty = 'medium';  growSize = 2; maxSpeed = 10; alive = true; onMenu = false; } break;
+    case '3': if (onMenu) { difficulty = 'hard';    growSize = 3; maxSpeed = 15; alive = true; onMenu = false; } break;
+
+    case 'w': case 'W':
+      if (!onMenu && !paused && alive && direction != 's') direction = 'w'; 
+      break;
+
+    case 's': case 'S':
+      if (!onMenu && !paused && alive && direction != 'w') direction = 's'; 
+      break;
+
+    case 'a': case 'A':
+      if (!onMenu && !paused && alive && direction != 'd') direction = 'a'; 
+      break;
+
+    case 'd': case 'D':
+      if (!onMenu && !paused && alive && direction != 'a') direction = 'd'; 
+      break;
+
+    case 'p': case 'P': if (alive && !onMenu) paused = !paused;  break;
+  }
+}
+
+
+function drawMenu() {
+  fill(0);
+  textSize(30);
+  textAlign(CENTER);
+  text("Choose Difficulty", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT - 15);
+  textSize(15);
+  text("Easy: Press 1", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT + 5);
+  text("Medium: Press 2", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT + 25);
+  text("Hard: Press 3", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT + 45);
+}
+
+
+function drawPause() {
+  textSize(50);
+  textAlign(CENTER);
+  text("PAUSE", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT);
+}
+
+
+function drawGameOver() {
   drawTrail();
   textSize(50);
   textAlign(CENTER);
   text("Game over!", (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT);
   textSize(30);
   text("Score: " + (snakeLength - 1).toString(), (COLS / 2) * GRID_WIDTH, (ROWS / 2) * GRID_HEIGHT + 30);
-}
-
-
-function keyPressed() {
-  switch(key) {
-    case 'w': if (direction != 's') direction = 'w'; if (!inGame) setup(); break;
-    case 's': if (direction != 'w') direction = 's'; if (!inGame) setup(); break;
-    case 'a': if (direction != 'd') direction = 'a'; if (!inGame) setup(); break;
-    case 'd': if (direction != 'a') direction = 'd'; if (!inGame) setup(); break;
-    case 'p': if (inGame) pause = !pause;  break;
-  }
 }
 
 
